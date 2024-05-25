@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="pageelement">
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container-fluid">
+          {% for category, message in messages %}
+              <div class="alert alert-{{ category }}" role="alert">
+                  {{ message }}
+              </div>
+          {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  
+  <!-- Personal Dashboard Heading -->
+  <div class="row">
+  <h2>Personal Dashboard</h2>
+</div>
+  
+  <!-- User Information -->
+  <section>
+    <div class="row">
+    <h3>User Information</h3>
+    <c>Username: {{ user_info.username }}</c>
+    <c>Account Balance: ${{ "%0.2f"|format(user_info.balance) }}</c>
+</div>
+  </section>
+  
+  <!-- Asset List -->
+  <section>
+    <div class="row">
+        <h3>Asset List</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Stock Symbol</th>
+                    <th>Quantity</th>
+                    <th>Stock Overview</th>
+                    <th>Stock Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in user_assets %}
+                <tr>
+                    <td>
+                        {{ asset.symbol }}
+                    </td>
+                    <td>{{ asset.quantity }}</td>
+                    <td>
+                        <a href="{{ url_for('stock.show_stock_info', symbol=asset.symbol) }}">{{ asset.symbol }} Overview</a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('main.plot_view', symbol=asset.symbol) }}">{{ asset.symbol }} Detail</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+<section>
+  <head>
+    <h3>Efficient Frontier Visualization</h3>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="ef-plot" style="width:80%; height:auto; margin: 0 auto;"></div>
+
+    <section>
+        <style>
+            #portfolio-performance-table th, #portfolio-performance-table td {
+                width: 150px;
+            }
+        </style>
+    <h3>Portfolio Performance Metrics</h3>
+    <table id="portfolio-performance-table" border="1">
+        <thead>
+            <tr>
+                <th>Metrics</th>
+                <th>User Portfolio</th>
+                <th>Max Sharpe Ratio</th>
+                <th>Min Volatility</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Volatility</td>
+                <td id="user-volatility"></td>
+                <td id="max-sharpe-volatility"></td>
+                <td id="min-vol-volatility"></td>
+            </tr>
+            <tr>
+                <td>Return</td>
+                <td id="user-return"></td>
+                <td id="max-sharpe-return"></td>
+                <td id="min-vol-return"></td>
+            </tr>
+            <tr>
+                <td>Sharpe Ratio</td>
+                <td id="user-sharpe"></td>
+                <td id="max-sharpe-sharpe"></td>
+                <td id="min-vol-sharpe"></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+<section>
+    <style>
+        #portfolio-weights-table th, #portfolio-weights-table td {
+            width: 100px;
+        }
+    </style>
+    <h3>Portfolio Weights Comparison</h3>
+    <table id="portfolio-weights-table" border="1">
+        <thead>
+            <tr id="weights-header">
+                <th style="width: 150px;">Portfolio / Stock</th>
+                <!-- Stock headers will be inserted here dynamically -->
+            </tr>
+        </thead>
+        <tbody id="weights-body">
+            <!-- Rows will be inserted here dynamically -->
+        </tbody>
+    </table>
+</section>
+</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/profile/get-plot-data')
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                // Dynamically generate table headers based on the symbols retrieved
+                const headerRow = document.getElementById('weights-header');
+                data.symbols.forEach(symbol => {
+                    let th = document.createElement('th');
+                    th.textContent = symbol;
+                    headerRow.appendChild(th);
+                });
+
+                // Plotting the Efficient Frontier
+                const efData = {
+                    x: data.ef_curve.volatilities,
+                    y: data.ef_curve.returns,
+                    mode: 'markers',
+                    name: 'Efficient Frontier',
+                    type: 'scatter'
+                };
+
+                const userPortfolio = {
+                    x: [data.user_portfolio.performance[0]],
+                    y: [data.user_portfolio.performance[1]],
+                    mode: 'markers',
+                    name: 'Your Portfolio',
+                    marker: {color: 'blue', size: 12}
+                };
+
+                const maxSharpe = {
+                    x: [data.max_sharpe_portfolio.performance[0]],
+                    y: [data.max_sharpe_portfolio.performance[1]],
+                    mode: 'markers',
+                    name: 'Max Sharpe Ratio',
+                    marker: {color: 'red', size: 12}
+                };
+
+                const minVol = {
+                    x: [data.min_vol_portfolio.performance[0]],
+                    y: [data.min_vol_portfolio.performance[1]],
+                    mode: 'markers',
+                    name: 'Min Volatility',
+                    marker: {color: 'green', size: 12}
+                };
+
+                Plotly.newPlot('ef-plot', [efData, userPortfolio, maxSharpe, minVol], {
+                    title: 'Efficient Frontier',
+                    xaxis: {title: 'Volatility (Standard Deviation)'},
+                    yaxis: {title: 'Expected Return'},
+                    margin: {t: 40}
+                });
+
+                // Populating the performance metrics table
+                document.getElementById('user-volatility').textContent = data.user_portfolio.performance[0].toFixed(4) + '%';
+                document.getElementById('user-return').textContent = data.user_portfolio.performance[1].toFixed(4) + '%';
+                document.getElementById('user-sharpe').textContent = (data.user_portfolio.performance[1] / data.user_portfolio.performance[0]).toFixed(4);
+
+                document.getElementById('max-sharpe-volatility').textContent = data.max_sharpe_portfolio.performance[0].toFixed(4) + '%';
+                document.getElementById('max-sharpe-return').textContent = data.max_sharpe_portfolio.performance[1].toFixed(4) + '%';
+                document.getElementById('max-sharpe-sharpe').textContent = (data.max_sharpe_portfolio.performance[1] / data.max_sharpe_portfolio.performance[0]).toFixed(4);
+
+                document.getElementById('min-vol-volatility').textContent = data.min_vol_portfolio.performance[0].toFixed(4) + '%';
+                document.getElementById('min-vol-return').textContent = data.min_vol_portfolio.performance[1].toFixed(4) + '%';
+                document.getElementById('min-vol-sharpe').textContent = (data.min_vol_portfolio.performance[1] / data.min_vol_portfolio.performance[0]).toFixed(4);
+
+                // Creating rows dynamically for portfolio weights
+                const portfolios = [
+                    { id: 'user', label: 'User Portfolio', weights: data.user_portfolio.weights },
+                    { id: 'max-sharpe', label: 'Optimal Portfolio', weights: data.max_sharpe_portfolio.weights }
+                ];
+
+                const tbody = document.getElementById('weights-body');
+                portfolios.forEach(portfolio => {
+                    let tr = document.createElement('tr');
+                    let tdLabel = document.createElement('td');
+                    tdLabel.textContent = portfolio.label;
+                    tr.appendChild(tdLabel);
+
+                    portfolio.weights.forEach((weight, index) => {
+                        let td = document.createElement('td');
+                        td.textContent = weight.toFixed(4);
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => console.error('Error fetching plot data:', error));
+        });
+        
+    </script>
+</body>
+</section>
+</div>
+{% endblock %}

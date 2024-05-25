@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="pageelement">
+  {% if symbol is defined %}
+  <div class="row">
+    <h2>{{ overview_data.Name }} ({{ symbol }})</h2>
+  </div>
+
+    <div class="row">
+      <h3>Stock Overview</h3>
+    <h4>{{ current_price_data | float | round(2) }}</h4> <c>At close: {{ current_time }}</c>
+    
+
+    <div class="col-md-12">
+      <input type="hidden" id="submittedSymbol" name="submittedSymbol" value="{{ symbol }}">
+      <div id="myChart"></div>
+    </div>
+
+    <div class="col-md-12">
+      {% if overview_data %}
+        <div class="stock-overview">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td><c>Sector</c></td><td>{{ overview_data.Sector }}</td>
+                <td><c>Industry</c></td><td>{{ overview_data.Industry }}</td>
+                <td><c>Stock exchange</c></td><td>{{ overview_data.Exchange }}</td>
+                
+              </tr>
+              <tr>
+                <td><c>Price to Earnings Ratio</c></td><td>{{ overview_data.PERatio }}</td>
+                <td><c>Earnings per share</c></td><td>{{ overview_data.EPS }}</td>
+                <td><c>Dividend</c></td><td>{{ overview_data.DividendPerShare }}</td>
+              </tr>
+              <tr>
+                <td><c>Market Capitalization</c></td><td>{{ overview_data.MarketCapitalization }}</td>
+                <td><c>52-week high</c></td><td>{{ overview_data['52WeekHigh'] }}</td>
+                <td><c>52-week low</c></td><td>{{ overview_data['52WeekLow'] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </div>
+</div>
+
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Latest News</h3>
+      <ul>
+        {% for news_item in news_data %}
+          <li>
+            <a href="{{ news_item['url'] }}" target="_blank">{{ news_item['title'] }}</a>
+            <p>{{ news_item['summary'] }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+<script src="{{ url_for('static', filename='includes/stock.js') }}"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+{% endblock %}

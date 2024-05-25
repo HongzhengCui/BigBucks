@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="pageelement">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              <div class="container-fluid">
+                  {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}" role="alert">
+                          {{ message }}
+                      </div>
+                  {% endfor %}
+              </div>
+          {% endif %}
+      {% endwith %}
+<div class="contact-form-container">
+        <h2>Contact Us</h2>
+        <p>Please fill out the form below to get in touch with us :)</p>
+
+        <form action="{{ url_for('main.submit_contact_form') }}" method="post">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Submit">
+              </div>
+        </form>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $(".alert").delay(5000).fadeOut(400);
+});
+</script>
+{% endblock %}
+

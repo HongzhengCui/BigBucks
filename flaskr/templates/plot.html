@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="pageelement">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <div id="returnsChart" style="width: 100%; height: 400px;"></div>
+    <div id="scatterChart" style="width: 100%; height: 400px;"></div>
+    <div id="histogramChart" style="width: 100%; height: 400px;"></div>
+    <div id="simpleVsYesterdayChart" style="width: 100%; height: 400px;"></div>
+    <div id="cumulativeChart" style="width: 100%; height: 400px;"></div>
+    <div id="priceChart" style="width: 100%; height: 400px;"></div>
+    <div id="comparisonChart" style="width: 100%; height: 400px;"></div> <!-- 新增的比较图表 div 元素 -->
+    <div id="regressionChart" style="width: 100%; height: 400px;"></div> <!-- 新增的回归线散点图 div 元素 -->
+    <div id="cumulativeComparisonChart" style="width: 100%; height: 400px;"></div>
+    <div id="volatilityChart" style="width: 100%; height: 400px;"></div>
+    <div id="rsiChart" style="width: 100%; height: 400px;"></div>
+    <div id="movingAverageChart" style="width: 100%; height: 400px;"></div>
+    
+    <script>
+    var scatterData = JSON.parse('{{ scatter_data_json | safe }}');
+    var returnsData = JSON.parse('{{ returns_data_json | safe }}');
+    var histogramData = JSON.parse('{{ histogram_data_json | safe }}');
+    var simpleVsYesterdayData = JSON.parse('{{ simple_vs_yesterday_data_json | safe }}');
+    var cumulativeData = JSON.parse('{{ cumulative_data_json | safe }}');
+    var priceData = JSON.parse('{{ price_data_json | safe }}');
+    var comparisonData = JSON.parse('{{ comparison_data_json | safe }}'); 
+    var regressionData = JSON.parse('{{ regression_data_json | safe }}'); 
+    var cumulative_comparison_data = JSON.parse('{{ cumulative_comparison_data_json | safe }}');
+    var volatility_data = JSON.parse('{{ volatility_data_json | safe }}');
+    var rsiData = JSON.parse('{{ rsi_data_json | safe }}');
+    var movingAverageData = JSON.parse('{{ moving_average_data_json | safe }}'); 
+
+    Plotly.newPlot('returnsChart', returnsData.data, returnsData.layout);
+    Plotly.newPlot('scatterChart', scatterData.data, scatterData.layout);
+    Plotly.newPlot('histogramChart', histogramData.data, histogramData.layout);
+    Plotly.newPlot('simpleVsYesterdayChart', simpleVsYesterdayData.data, simpleVsYesterdayData.layout);
+    Plotly.newPlot('cumulativeChart', cumulativeData.data, cumulativeData.layout);
+    Plotly.newPlot('priceChart', priceData.data, priceData.layout);
+    Plotly.newPlot('comparisonChart', comparisonData.data, comparisonData.layout); 
+    Plotly.newPlot('regressionChart', regressionData.data, regressionData.layout); 
+    Plotly.newPlot('cumulativeComparisonChart', cumulative_comparison_data.data, cumulative_comparison_data.layout);
+    Plotly.newPlot('volatilityChart', volatility_data.data, volatility_data.layout);
+    Plotly.newPlot('rsiChart', rsiData.data, rsiData.layout);
+    Plotly.newPlot('movingAverageChart', movingAverageData.data, movingAverageData.layout);
+    </script>
+</div>
+{% endblock %}

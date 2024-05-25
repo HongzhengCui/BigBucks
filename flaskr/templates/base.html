@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ page_data.title if page_data and 'title' in page_data }} - BigBucks{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='includes/style.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="container">
+
+        <section class="content">
+            {% block content %}
+            {% endblock %}
+        </section>
+    </div>
+    {% include 'footer.html' %}
+</body>
+</html>
+

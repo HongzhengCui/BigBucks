@@ -1,0 +1,36 @@
+{% block content %}
+<div class="login-container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              <div class="container-fluid">
+                  {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}" role="alert">
+                          {{ message }}
+                      </div>
+                  {% endfor %}
+              </div>
+          {% endif %}
+      {% endwith %}
+  <div class="login-form">
+    <h2>Register for BigBucks</h2>
+    <form method="post">
+      <div class="login-form-group">
+        <label for="username">Username</label>
+        <input type="username" name="username" id="username" required>
+      </div>
+      <div class="login-form-group">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" required>
+      </div>
+      <div class="login-form-group">
+        <input type="submit" value="Register">
+      </div>
+      <div class="login-form-group">
+        <p>Already started? <a href="/auth/login">Log in here</a></p>
+      </div>
+    </form>
+  </div>
+</div>
+<link rel="stylesheet" href="{{ url_for('static', filename='includes/style.css') }}">
+
+{% endblock %}
